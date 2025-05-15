@@ -1,0 +1,47 @@
+#!/bin/sh
+script_name=$(basename "$0")
+version=0.0.1
+input="$1"
+case "$#" in
+    0) printf "Indique el PDF de la factura.\n"
+    exit 1
+;;
+    1) case "$1" in
+        -h|--help|-v|--version)
+            option="$1"
+            case "$option" in
+                -h|--help)
+                    printf "Uso: factura archivo.pdf\n"
+                    printf "     factura archivo.pdf carpeta\n"
+                    printf " -h, --help\t\tMuestra esta ayuda y sale.\n\n"
+                    printf " -v, --version\t\tMuestra la información de versión.\n"
+            ;;
+                -v|--version) printf "${script_name} ${version}\n"
+            ;; esac
+            exit 0
+    ;; esac
+        output="$input"
+;;
+    2)
+        output="$2"
+;;
+    *) printf "Demasiados aegumentos\n"
+        exit 2
+;; esac
+if [ ! -f "$input" ]; then
+    echo "$0: no se puede acceder a $input: El PDF no existe\n"
+    exit 4
+fi
+dir_name=$(dirname "$output")
+filename=${output%.*}
+ext_d=${d##*.}
+[ "$ext_d" != d ] && newdir="${dir_name}/${filename}.d"
+mkdir -p "$newdir"
+original="${newdir}/1-original.pdf"
+duplicado="${newdir}/2-duplicado.pdf"
+triplicado="${newdir}/3-triplicado.pdf"
+pdfseparate -f 1 -l 1 "$input" "$original"
+pdfseparate -f 2 -l 2 "$input" "$duplicado"
+pdfseparate -f 3 -l 3 "$input" "$triplicado"
+printf "El original, duplicado y triplicado están en: $newdir\n"
+exit 0
